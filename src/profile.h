@@ -130,6 +130,7 @@ typedef struct profile {
   int pro_ca_timeout;
   int pro_swservice;
   int pro_svfilter;
+  int pro_rndservice; /* kegbeach: part of service randomization logic */
 
   void (*pro_free)(struct profile *pro);
   void (*pro_conf_changed)(struct profile *pro);

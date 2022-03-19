@@ -578,6 +578,29 @@ service_find_instance
     return NULL;
   }
 
+  /* kegbeach: start service randomization logic */
+  if (pro->pro_rndservice) {
+    int randy, bobandy;
+
+    struct timespec ts;
+
+    timespec_get(&ts, TIME_UTC);
+
+    srandom(ts.tv_nsec ^ ts.tv_sec);
+
+    bobandy = random() % 99 + 1;
+
+    si = TAILQ_FIRST(sil);
+
+    for (randy = 1; randy <= bobandy; randy++) {
+      si = TAILQ_NEXT(si, si_link);
+        if (si == NULL) {
+          si = TAILQ_FIRST(sil);
+        }
+    }
+  }
+  /* kegbeach: end service randomization logic */
+
   /* Start */
   tvhtrace(LS_SERVICE, "will start new instance %d", si->si_instance);
   if (service_start(si->si_s, si->si_instance, weight, flags, timeout, postpone)) {

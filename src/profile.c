@@ -102,6 +102,7 @@ profile_create
   pro->pro_swservice = 1;
   pro->pro_contaccess = 1;
   pro->pro_ca_timeout = 2000;
+  pro->pro_rndservice = 1; /* kegbeach: part of service randomization logic */
   if (idnode_insert(&pro->pro_id, uuid, pb->clazz, 0)) {
     if (uuid)
       tvherror(LS_PROFILE, "invalid uuid '%s'", uuid);
@@ -440,6 +441,20 @@ const idclass_t profile_class =
       .def.i    = PROFILE_SVF_NONE,
       .group    = 1
     },
+
+    /* kegbeach: start service randomization logic */
+    {
+      .type     = PT_BOOL,
+      .id       = "rndservice",
+      .name     = N_("Randomize service selection"),
+      .desc     = N_("Randomizes the service used when tuning a channel."),
+      .off      = offsetof(profile_t, pro_rndservice),
+      .opts     = PO_EXPERT,
+      .def.i    = 1,
+      .group    = 1
+    },
+    /* kegbeach: end service randomization logic */
+
     { }
   }
 };
