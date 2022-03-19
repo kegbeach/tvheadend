@@ -336,7 +336,7 @@ http_stream_run(http_connection_t *hc, profile_chain_t *prch,
   int run = 1, started = 0;
   streaming_queue_t *sq = &prch->prch_sq;
   muxer_t *mux = prch->prch_muxer;
-  int ptimeout, grace = 20, r;
+  int ptimeout, grace = 600, r; /* kegbeach: set grace to 600 */
   struct timeval tp;
   streaming_start_t *ss_copy;
   int64_t lastpkt, mono;
@@ -410,7 +410,7 @@ http_stream_run(http_connection_t *hc, profile_chain_t *prch,
       break;
 
     case SMT_START:
-      grace = 10;
+      grace = 600; /* kegbeach: set grace to 600 */
       if(!started) {
         tvhdebug(LS_WEBUI, "%s streaming %s",
                  hc->hc_no_output ? "Probe" : "Start", hc->hc_url_orig);
