@@ -582,14 +582,7 @@ service_find_instance
   if (pro->pro_rndservice) {
     int randy, bobandy;
 
-    struct timespec ts;
-
-    timespec_get(&ts, TIME_UTC);
-
-    srandom(ts.tv_nsec ^ ts.tv_sec);
-
     bobandy = random() % 99 + 1;
-
     si = TAILQ_FIRST(sil);
 
     for (randy = 1; randy <= bobandy; randy++) {
