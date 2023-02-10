@@ -230,6 +230,12 @@ var codec_profile_forms = {
     },
 
     'codec_profile_vaapi_h264': function(form) {
+        function updateHWFilters(form) {
+            var hwaccel_field = form.findField('hwaccel');
+            form.findField('hw_denoise').setDisabled(!hwaccel_field.getValue());
+            form.findField('hw_sharpness').setDisabled(!hwaccel_field.getValue());
+        }
+
         function updateFilters(form) {
             var platform_field = form.findField('platform');
             var rc_mode_field = form.findField('rc_mode');
@@ -239,6 +245,7 @@ var codec_profile_forms = {
             var bit_rate_scale_factor_field = form.findField('bit_rate_scale_factor');
             var qp_field = form.findField('qp');
             var low_power_field = form.findField('low_power');
+            var desired_b_depth_field = form.findField('desired_b_depth');
 
             var platform = platform_field.getValue();
             switch (platform) {
@@ -252,9 +259,12 @@ var codec_profile_forms = {
                     bit_rate_scale_factor_field.setDisabled(false);
                     qp_field.setDisabled(false);
                     low_power_field.setDisabled(false);
+                    desired_b_depth_field.setDisabled(false);
                     break;
                 case 1:
                     // Intel
+                    // low_power is disabling Max B frame
+                    desired_b_depth_field.setDisabled(low_power_field.getValue());
                     var rc_mode = rc_mode_field.getValue();
                     switch (rc_mode) {
                         case -1:
@@ -314,11 +324,14 @@ var codec_profile_forms = {
                     // AMD --> will allow any combination of parameters
                     // I am unable to confirm this platform because I don't have the HW
                     // Is only going to override bf to 0 (as highlited by the previous implementation)
+                    // NOTE: filters to be added later
                     bit_rate_field.setDisabled(false);
                     max_bit_rate_field.setDisabled(false);
                     buff_factor_field.setDisabled(false);
                     bit_rate_scale_factor_field.setDisabled(false);
                     qp_field.setDisabled(false);
+                    low_power_field.setDisabled(false);
+                    desired_b_depth_field.setDisabled(false);
                     break;
                 default:
             }
@@ -326,20 +339,38 @@ var codec_profile_forms = {
 
         var platform_field = form.findField('platform');
         var rc_mode_field = form.findField('rc_mode');
+        var low_power_field = form.findField('low_power');
+        var hwaccel_field = form.findField('hwaccel');
+        
         // first time we have to call this manually
         updateFilters(form);
+        updateHWFilters(form);
         
         // on platform change
-        platform_field.on('select', function(spinner) {
+        platform_field.on('select', function(combo, record, index) {
             updateFilters(form);
         });
         // on rc_mode change
-        rc_mode_field.on('select', function(spinner) {
+        rc_mode_field.on('select', function(combo, record, index) {
             updateFilters(form);
+        });
+        // on low_power change
+        low_power_field.on('check', function(checkbox, value) {
+            updateFilters(form);
+        });
+        // on hwaccel change
+        hwaccel_field.on('check', function(checkbox, value) {
+            updateHWFilters(form);
         });
     },
 
     'codec_profile_vaapi_hevc': function(form) {
+        function updateHWFilters(form) {
+            var hwaccel_field = form.findField('hwaccel');
+            form.findField('hw_denoise').setDisabled(!hwaccel_field.getValue());
+            form.findField('hw_sharpness').setDisabled(!hwaccel_field.getValue());
+        }
+
         function updateFilters(form) {
             var platform_field = form.findField('platform');
             var rc_mode_field = form.findField('rc_mode');
@@ -349,6 +380,7 @@ var codec_profile_forms = {
             var bit_rate_scale_factor_field = form.findField('bit_rate_scale_factor');
             var qp_field = form.findField('qp');
             var low_power_field = form.findField('low_power');
+            var desired_b_depth_field = form.findField('desired_b_depth');
 
             var platform = platform_field.getValue();
             switch (platform) {
@@ -362,9 +394,12 @@ var codec_profile_forms = {
                     bit_rate_scale_factor_field.setDisabled(false);
                     qp_field.setDisabled(false);
                     low_power_field.setDisabled(false);
+                    desired_b_depth_field.setDisabled(false);
                     break;
                 case 1:
                     // Intel
+                    // low_power is disabling Max B frame
+                    desired_b_depth_field.setDisabled(low_power_field.getValue());
                     var rc_mode = rc_mode_field.getValue();
                     switch (rc_mode) {
                         case -1:
@@ -424,11 +459,14 @@ var codec_profile_forms = {
                     // AMD --> will allow any combination of parameters
                     // I am unable to confirm this platform because I don't have the HW
                     // Is only going to override bf to 0 (as highlited by the previous implementation)
+                    // NOTE: filters to be added later
                     bit_rate_field.setDisabled(false);
                     max_bit_rate_field.setDisabled(false);
                     buff_factor_field.setDisabled(false);
                     bit_rate_scale_factor_field.setDisabled(false);
                     qp_field.setDisabled(false);
+                    low_power_field.setDisabled(false);
+                    desired_b_depth_field.setDisabled(false);
                     break;
                 default:
             }
@@ -436,20 +474,38 @@ var codec_profile_forms = {
 
         var platform_field = form.findField('platform');
         var rc_mode_field = form.findField('rc_mode');
+        var low_power_field = form.findField('low_power');
+        var hwaccel_field = form.findField('hwaccel');
+
         // first time we have to call this manually
         updateFilters(form);
+        updateHWFilters(form);
         
         // on platform change
-        platform_field.on('select', function(spinner) {
+        platform_field.on('select', function(combo, record, index) {
             updateFilters(form);
         });
         // on rc_mode change
-        rc_mode_field.on('select', function(spinner) {
+        rc_mode_field.on('select', function(combo, record, index) {
             updateFilters(form);
+        });
+        // on low_power change
+        low_power_field.on('check', function(checkbox, value) {
+            updateFilters(form);
+        });
+        // on hwaccel change
+        hwaccel_field.on('check', function(checkbox, value) {
+            updateHWFilters(form);
         });
     },
 
     'codec_profile_vaapi_vp8': function(form) {
+        function updateHWFilters(form) {
+            var hwaccel_field = form.findField('hwaccel');
+            form.findField('hw_denoise').setDisabled(!hwaccel_field.getValue());
+            form.findField('hw_sharpness').setDisabled(!hwaccel_field.getValue());
+        }
+
         function updateFilters(form) {
             var platform_field = form.findField('platform');
             var rc_mode_field = form.findField('rc_mode');
@@ -531,6 +587,7 @@ var codec_profile_forms = {
                     // AMD --> will allow any combination of parameters
                     // I am unable to confirm this platform because I don't have the HW
                     // Is only going to override bf to 0 (as highlited by the previous implementation)
+                    // NOTE: filters to be added later
                     bit_rate_field.setDisabled(false);
                     max_bit_rate_field.setDisabled(false);
                     buff_factor_field.setDisabled(false);
@@ -543,20 +600,33 @@ var codec_profile_forms = {
 
         var platform_field = form.findField('platform');
         var rc_mode_field = form.findField('rc_mode');
+        var hwaccel_field = form.findField('hwaccel');
+
         // first time we have to call this manually
         updateFilters(form);
+        updateHWFilters(form);
 
         // on platform change
-        platform_field.on('select', function(spinner) {
+        platform_field.on('select', function(combo, record, index) {
             updateFilters(form);
         });
         // on rc_mode change
-        rc_mode_field.on('select', function(spinner) {
+        rc_mode_field.on('select', function(combo, record, index) {
             updateFilters(form);
+        });
+        // on hwaccel change
+        hwaccel_field.on('check', function(checkbox, value) {
+            updateHWFilters(form);
         });
     },
 
     'codec_profile_vaapi_vp9': function(form) {
+        function updateHWFilters(form) {
+            var hwaccel_field = form.findField('hwaccel');
+            form.findField('hw_denoise').setDisabled(!hwaccel_field.getValue());
+            form.findField('hw_sharpness').setDisabled(!hwaccel_field.getValue());
+        }
+
         function updateFilters(form) {
             var platform_field = form.findField('platform');
             var rc_mode_field = form.findField('rc_mode');
@@ -638,6 +708,7 @@ var codec_profile_forms = {
                     // AMD --> will allow any combination of parameters
                     // I am unable to confirm this platform because I don't have the HW
                     // Is only going to override bf to 0 (as highlited by the previous implementation)
+                    // NOTE: filters to be added later
                     bit_rate_field.setDisabled(false);
                     max_bit_rate_field.setDisabled(false);
                     buff_factor_field.setDisabled(false);
@@ -650,16 +721,23 @@ var codec_profile_forms = {
 
         var platform_field = form.findField('platform');
         var rc_mode_field = form.findField('rc_mode');
+        var hwaccel_field = form.findField('hwaccel');
+
         // first time we have to call this manually
         updateFilters(form);
+        updateHWFilters(form);
 
         // on platform change
-        platform_field.on('select', function(spinner) {
+        platform_field.on('select', function(combo, record, index) {
             updateFilters(form);
         });
         // on rc_mode change
-        rc_mode_field.on('select', function(spinner) {
+        rc_mode_field.on('select', function(combo, record, index) {
             updateFilters(form);
+        });
+        // on hwaccel change
+        hwaccel_field.on('check', function(checkbox, value) {
+            updateHWFilters(form);
         });
     }
 };
