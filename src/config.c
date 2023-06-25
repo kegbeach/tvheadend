@@ -17,7 +17,7 @@
  */
 
 #include <ctype.h>
-#include <linux/limits.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -1693,13 +1693,15 @@ config_check ( void )
 
 static int config_newcfg = 0;
 
-static char *config_get_dir ( void )
+static char *config_get_dir ( uid_t uid )
 {
   char hts_home[PATH_MAX + sizeof("/.hts/tvheadend")]; /* Must be largest of the 3 config strings! */
   char config_home[PATH_MAX];
   char home_dir[PATH_MAX];
-  uid_t uid = getuid();
   struct stat st;
+
+  if (uid == -1)
+    uid = getuid();
 
   snprintf(hts_home, sizeof(hts_home), "/var/lib/tvheadend");
   if ((stat(hts_home, &st) == 0) && (st.st_uid == uid))
@@ -1720,9 +1722,9 @@ static char *config_get_dir ( void )
       char hts_home_link[PATH_MAX];
 
       if ((readlink(hts_home, hts_home_link, sizeof(hts_home_link)) == -1) ||
-	  (stat(hts_home_link, &st) == -1)) {
-	tvherror(LS_CONFIG, ".hts/tvheadend is inaccessable: %s", strerror(errno));
-	return NULL;
+          (stat(hts_home_link, &st) == -1)) {
+        tvherror(LS_CONFIG, ".hts/tvheadend is inaccessible: %s", strerror(errno));
+        return NULL;
       }
       strncpy(hts_home, hts_home_link, sizeof(hts_home));
     }
@@ -1777,16 +1779,16 @@ config_boot
 
   /* Generate default */
   if (!path)
-    config.confdir = config_get_dir();
+    config.confdir = config_get_dir(uid);
   else
     config.confdir = strndup(path, PATH_MAX);
 
   if (config.confdir == NULL) {
-    tvherror(LS_START, "unable to determine tvheadend home\n");
+    tvherror(LS_START, "unable to determine tvheadend home");
     exit(EXIT_FAILURE);
   }
 
-  tvhinfo(LS_CONFIG, "Using configuration from '%s'\n", config.confdir);
+  tvhinfo(LS_CONFIG, "Using configuration from '%s'", config.confdir);
 
   /* Ensure directory exists */
   if (stat(config.confdir, &st)) {
