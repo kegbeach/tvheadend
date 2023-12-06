@@ -4,9 +4,13 @@ on:
   pull_request:
     branches:
       - master
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+concurrency:
+  # auto-cancel previous runs if the pull request is force-push updated
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   build-raspberry:
@@ -115,6 +119,7 @@ jobs:
             if [ '${{ matrix.distro }}' = 'jessie' ]; then sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list; fi
             if [ '${{ matrix.distro }}' = 'jessie' ]; then sed -i 's/security.debian.org/archive.debian.org/g' /etc/apt/sources.list; fi
             if [ '${{ matrix.distro }}' = 'jessie' ]; then sed -i '/jessie-updates/d' /etc/apt/sources.list; fi
+            if [ '${{ matrix.distro }}' = 'stretch' ]; then sed -i 's/archive.raspbian.org/legacy.raspbian.org/g' /etc/apt/sources.list; fi
             if [ '${{ matrix.distro }}' = 'stretch' ]; then sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list; fi
             if [ '${{ matrix.distro }}' = 'stretch' ]; then sed -i 's/security.debian.org/archive.debian.org/g' /etc/apt/sources.list; fi
             if [ '${{ matrix.distro }}' = 'stretch' ]; then sed -i '/stretch-updates/d' /etc/apt/sources.list; fi
@@ -151,7 +156,7 @@ jobs:
     name: Build on native ${{ matrix.container }}
     strategy:
       matrix:
-        container: ["ubuntu:bionic", "ubuntu:focal", "ubuntu:jammy", "ubuntu:kinetic", "ubuntu:trusty", "ubuntu:xenial", "i386/ubuntu:trusty", "i386/ubuntu:xenial", "debian:bookworm", "debian:bullseye", "debian:buster", "debian:sid", "debian:stretch", "i386/debian:bookworm", "i386/debian:bullseye", "i386/debian:buster", "i386/debian:sid", "i386/debian:stretch"]
+        container: ["i386/ubuntu:trusty", "ubuntu:trusty", "i386/ubuntu:xenial", "ubuntu:xenial", "ubuntu:bionic", "ubuntu:focal", "ubuntu:jammy", "ubuntu:lunar", "ubuntu:mantic", "i386/debian:stretch", "debian:stretch", "i386/debian:buster", "debian:buster", "i386/debian:bullseye", "debian:bullseye", "i386/debian:bookworm", "debian:bookworm", "i386/debian:trixie", "debian:trixie", "debian:sid"]
     container:
       image: ${{ matrix.container }}
     steps:
