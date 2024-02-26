@@ -217,7 +217,7 @@ handle_sigill(int x)
   /* to determine the CPU capabilities with possible */
   /* unknown instructions */
   tvhwarn(LS_CPU, "Illegal instruction handler (might be OK)");
-  signal(SIGILL, handle_sigill);
+  tvh_signal(SIGILL, handle_sigill);
 }
 
 void
@@ -228,7 +228,7 @@ doexit(int x)
   tvh_cond_signal(&gtimer_cond, 0);
   tvh_cond_signal(&mtimer_cond, 0);
   atomic_set(&tvheadend_running, 0);
-  signal(x, doexit);
+  tvh_signal(x, doexit);
 }
 
 static int
@@ -850,7 +850,7 @@ main(int argc, char **argv)
               opt_threadid     = 0,
               opt_libav        = 0,
               opt_ipv6         = 0,
-              opt_nosatip      = 0,
+              opt_nosatipcli   = 0,
               opt_satip_rtsp   = 0,
 #if ENABLE_TSFILE
               opt_tsfile_tuner = 0,
@@ -918,8 +918,10 @@ main(int argc, char **argv)
       OPT_INT, &opt_satip_rtsp },
 #endif
 #if ENABLE_SATIP_CLIENT
-    {   0, "nosatip",    N_("Disable SAT>IP client"),
-      OPT_BOOL, &opt_nosatip },
+    {   0, "nosatip",    N_("Disable SAT>IP client (deprecated flag, use nosatipcli)"),
+      OPT_BOOL, &opt_nosatipcli },
+    {   0, "nosatipcli",    N_("Disable SAT>IP client"),
+      OPT_BOOL, &opt_nosatipcli },
     {   0, "satip_xml",  N_("URL with the SAT>IP server XML location"),
       OPT_STR_LIST, &opt_satip_xml },
 #endif
@@ -1118,8 +1120,11 @@ main(int argc, char **argv)
   tvhlog_set_trace(log_trace);
   tvhinfo(LS_MAIN, "Log started");
 
-  signal(SIGPIPE, handle_sigpipe); // will be redundant later
-  signal(SIGILL, handle_sigill);   // see handler..
+  tvh_signal(SIGPIPE, handle_sigpipe); // will be redundant later
+  tvh_signal(SIGILL, handle_sigill);   // see handler..
+
+  if (opt_fork && !opt_user && !opt_config)
+    tvhwarn(LS_START, "Forking without --user or --config may use unexpected configuration location");
 
   /* Set privileges */
   if((opt_fork && getuid() == 0) || opt_group || opt_user) {
@@ -1306,7 +1311,7 @@ main(int argc, char **argv)
   tvhftrace(LS_MAIN, descrambler_init);
   tvhftrace(LS_MAIN, dvb_init);
 #if ENABLE_MPEGTS
-  tvhftrace(LS_MAIN, mpegts_init, adapter_mask, opt_nosatip, &opt_satip_xml,
+  tvhftrace(LS_MAIN, mpegts_init, adapter_mask, opt_nosatipcli, &opt_satip_xml,
             &opt_tsfile, opt_tsfile_tuner);
 #endif
   tvhftrace(LS_MAIN, channel_init);
@@ -1352,8 +1357,8 @@ main(int argc, char **argv)
   sigaddset(&set, SIGTERM);
   sigaddset(&set, SIGINT);
 
-  signal(SIGTERM, doexit);
-  signal(SIGINT, doexit);
+  tvh_signal(SIGTERM, doexit);
+  tvh_signal(SIGINT, doexit);
 
   pthread_sigmask(SIG_UNBLOCK, &set, NULL);
 

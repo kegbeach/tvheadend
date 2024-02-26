@@ -1970,6 +1970,7 @@ hdhomerun_server_discover(http_connection_t *hc, const char *remain, void *opaqu
   htsmsg_add_u32(msg, "TunerCount", config.hdhomerun_server_tuner_count ?: 6);
 
   char *json = htsmsg_json_serialize_to_str(msg, 1);
+  htsmsg_destroy(msg);
   htsbuf_append_str(hq, json);
   free(json);
   http_output_content(hc, "application/json");
@@ -2205,6 +2206,19 @@ page_srvid2(http_connection_t *hc, const char *remain, void *opaque)
 }
 
 /**
+ * Sanitice a filename to remove illegal characters from it
+ */
+static char *sanitize_filename(char *filename) {
+  if (!filename) return NULL;
+  char *s;
+  for (s = filename; *s; s++) {
+    if ((*s < 32) || (*s > 122) || strchr("/:\\<>|*?\"", *s) != NULL)
+      *s = '_';
+  }
+  return filename;
+}
+
+/**
  * Send a file
  */
 int
@@ -2244,6 +2258,7 @@ http_serve_file(http_connection_t *hc, const char *fname,
                  basename, intlconv_charset_id("ASCII", 1, 1));
         return HTTP_STATUS_INTERNAL;
       }
+      sanitize_filename(str0);
       htsbuf_queue_init(&q, 0);
       htsbuf_append_and_escape_rfc8187(&q, basename);
       str = htsbuf_to_string(&q);
