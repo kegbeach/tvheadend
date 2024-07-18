@@ -169,6 +169,8 @@ jobs:
         container: ["i386/ubuntu:trusty", "ubuntu:trusty", "i386/ubuntu:xenial", "ubuntu:xenial", "ubuntu:bionic", "ubuntu:focal", "ubuntu:jammy", "ubuntu:noble", "i386/debian:stretch", "debian:stretch", "i386/debian:buster", "debian:buster", "i386/debian:bullseye", "debian:bullseye", "i386/debian:bookworm", "debian:bookworm", "i386/debian:trixie", "debian:trixie", "i386/debian:sid", "debian:sid"]
     container:
       image: ${{ matrix.container }}
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Fix old debian apt
         if: matrix.container == 'debian:stretch' || matrix.container == 'i386/debian:stretch'
@@ -233,6 +235,7 @@ jobs:
       - name: dependencies
         run: |
           dnf install -y gcc-c++ gcc-c++ which rpm-build rpmdevtools git make cmake gettext-devel dbus-devel avahi-devel openssl-devel zlib-devel libdvbcsa-devel wget bzip2 uriparser-devel pcre2-devel python python-requests ccache systemd-units systemd-devel
+          dnf install -y openssl-devel-engine || true
       - uses: actions/checkout@v1
       - name: Workaround safe directory
         run: git config --global --add safe.directory /__w/tvheadend/tvheadend
