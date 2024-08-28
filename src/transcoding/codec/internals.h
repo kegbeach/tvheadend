@@ -153,7 +153,11 @@ TVHCodec *
 tvh_codec_find(const char *name);
 
 void
+#if ENABLE_VAAPI
+tvh_codecs_register(int vainfo_probe_enabled);
+#else
 tvh_codecs_register(void);
+#endif
 
 void
 tvh_codecs_forget(void);
@@ -181,7 +185,11 @@ typedef struct tvh_codec_audio {
     TVHCodec;
     const enum AVSampleFormat *sample_fmts;
     const int *sample_rates;
+#if LIBAVCODEC_VERSION_MAJOR > 59
+    const AVChannelLayout *channel_layouts;
+#else
     const uint64_t *channel_layouts;
+#endif
 } TVHAudioCodec;
 
 
@@ -231,7 +239,11 @@ typedef struct tvh_codec_profile_audio {
     char *language3;
     int sample_fmt;
     int sample_rate;
+#if LIBAVCODEC_VERSION_MAJOR > 59
+    AVChannelLayout channel_layout;
+#else
     int64_t channel_layout;
+#endif
 } TVHAudioCodecProfile;
 
 

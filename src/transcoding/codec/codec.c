@@ -20,6 +20,9 @@
 
 #include "internals.h"
 
+#if ENABLE_VAAPI
+#include "vainfo.h"
+#endif
 
 struct TVHCodecs tvh_codecs;
 
@@ -136,7 +139,11 @@ tvh_codec_audio_init(TVHAudioCodec *self, const AVCodec *codec)
             self->sample_rates = default_sample_rates;
     }
     if (!self->channel_layouts) {
+#if LIBAVCODEC_VERSION_MAJOR > 59
+        self->channel_layouts = codec->ch_layouts;
+#else
         self->channel_layouts = codec->channel_layouts;
+#endif
     }
 }
 
@@ -250,7 +257,11 @@ tvh_codec_find(const char *name)
 
 
 void
+#if ENABLE_VAAPI
+tvh_codecs_register(int vainfo_probe_enabled)
+#else
 tvh_codecs_register()
+#endif
 {
     SLIST_INIT(&tvh_codecs);
     tvh_codec_register(&tvh_codec_mpeg2video);
@@ -287,10 +298,26 @@ tvh_codecs_register()
 #endif
 
 #if ENABLE_VAAPI
-    tvh_codec_register(&tvh_codec_vaapi_h264);
-    tvh_codec_register(&tvh_codec_vaapi_hevc);
-    tvh_codec_register(&tvh_codec_vaapi_vp8);
-    tvh_codec_register(&tvh_codec_vaapi_vp9);
+    if (vainfo_probe_enabled && !vainfo_init(VAINFO_SHOW_LOGS)) {
+        if (vainfo_encoder_isavailable(VAINFO_H264) || 
+            vainfo_encoder_isavailable(VAINFO_H264_LOW_POWER))
+            tvh_codec_register(&tvh_codec_vaapi_h264);
+        if (vainfo_encoder_isavailable(VAINFO_HEVC) || 
+            vainfo_encoder_isavailable(VAINFO_HEVC_LOW_POWER))
+            tvh_codec_register(&tvh_codec_vaapi_hevc);
+        if (vainfo_encoder_isavailable(VAINFO_VP8) || 
+            vainfo_encoder_isavailable(VAINFO_VP8_LOW_POWER))
+            tvh_codec_register(&tvh_codec_vaapi_vp8);
+        if (vainfo_encoder_isavailable(VAINFO_VP9) || 
+            vainfo_encoder_isavailable(VAINFO_VP9_LOW_POWER))
+            tvh_codec_register(&tvh_codec_vaapi_vp9);
+    }
+    else {
+        tvh_codec_register(&tvh_codec_vaapi_h264);
+        tvh_codec_register(&tvh_codec_vaapi_hevc);
+        tvh_codec_register(&tvh_codec_vaapi_vp8);
+        tvh_codec_register(&tvh_codec_vaapi_vp9);
+    }
 #endif
 
 #if ENABLE_NVENC
